@@ -120,7 +120,7 @@ void read_into(int connfd[num_threads], Mat<T> &buffer)
     char *data = (char *)buffer.data();
     auto size = buffer.size() * sizeof(T);
 
-    // #pragma omp parallel for num_threads(num_threads)
+    #pragma omp parallel for num_threads(num_threads)
     for (int i = 0; i < num_threads; i++)
     {
         auto [s, cs] = chunk(size, i);
@@ -135,7 +135,7 @@ void write_into(int connfd[num_threads], const Mat<T> &buffer)
     char *data = (char *)buffer.data();
     auto size = buffer.size() * sizeof(T);
 
-    // #pragma omp parallel for num_threads(num_threads)
+    #pragma omp parallel for num_threads(num_threads)
     for (int i = 0; i < num_threads; i++)
     {
         auto [s, cs] = chunk(size, i);
