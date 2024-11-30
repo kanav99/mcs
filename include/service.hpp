@@ -12,6 +12,7 @@
 #include <unistd.h> 
 #include <iostream> 
 #include <Eigen/Dense>
+#include <chrono>
 
 const int DEFAULT_PORT = 5065;
 
@@ -204,12 +205,15 @@ Mat<T> request(const Mat<T> &x, u64 out_d0, std::string ip = "127.0.0.1", int po
     // strcpy(buffer, "Hello Server"); 
     u64 d0 = x.rows();
     u64 d1 = x.cols();
+    Mat<T> y(out_d0, d1);
+    auto start = std::chrono::high_resolution_clock::now();
     write_into(sockfd, d0);
     write_into(sockfd, d1);
     write_into(sockfd, x);
     // printf("Message from server: "); 
-    Mat<T> y(out_d0, d1);
     read_into(sockfd, y);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Time for communication: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
     // std::cout << y << std::endl;
     close(sockfd); 
     return y;

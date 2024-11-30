@@ -5,7 +5,7 @@
 
 const uint DIM0 = 10000;
 const uint DIM1 = 10000;
-const uint BATCH_SIZE = 100;
+const uint BATCH_SIZE = 10;
 const int PORT = 5065;
 
 using T = unsigned long long;
