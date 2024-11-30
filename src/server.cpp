@@ -4,13 +4,14 @@
 
 const uint DIM0 = 1000;
 const uint DIM1 = 1000;
+const uint BATCH_SIZE = 10;
 const int PORT = 5065;
 
 using T = unsigned long long;
 
 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> mat(DIM0, DIM1);
 
-Eigen::Matrix<T, DIM0, 1> matmul(const Eigen::Matrix<T, DIM1, 1>& vec)
+Eigen::Matrix<T, DIM0, BATCH_SIZE> matmul(const Eigen::Matrix<T, DIM1, BATCH_SIZE>& vec)
 {
     return mat * vec;
 }
@@ -35,7 +36,7 @@ int main()
     std::cerr << "[server] Generated Commitment in `commit.bin`" << std::endl;
 
     std::cerr << "[server] Listening for requests..." << std::endl;
-    loop<Eigen::Matrix<T, DIM1, 1>, Eigen::Matrix<T, DIM0, 1>, matmul>(PORT);
+    loop<Eigen::Matrix<T, DIM1, BATCH_SIZE>, Eigen::Matrix<T, DIM0, BATCH_SIZE>, matmul>(PORT);
 
     return 0;
 }
