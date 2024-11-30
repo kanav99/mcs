@@ -11,8 +11,22 @@
 #include <sys/types.h> 
 #include <unistd.h> 
 #include <iostream> 
+#include <Eigen/Dense>
 
 const int DEFAULT_PORT = 5065;
+
+template <class T, int D0, int D1>
+void print(const Eigen::Matrix<T, D0, D1>& mat)
+{
+    for (int i = 0; i < D0; i++)
+    {
+        for (int j = 0; j < D1; j++)
+        {
+            std::cout << mat(i, j) << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 template <class ArgType, class RetType, RetType (*F)(const ArgType&)>
 void loop(int port = DEFAULT_PORT) 
@@ -63,6 +77,7 @@ void loop(int port = DEFAULT_PORT)
                 bzero((char *)(&buffer), sizeof(buffer)); 
                 // printf("Message From TCP client: "); 
                 read(connfd, (void *) (&buffer), sizeof(buffer)); 
+                print(buffer);
                 // std::cout << buffer << std::endl;
                 RetType res = F(buffer);
                 write(connfd, (const void*)(&res), sizeof(res)); 
