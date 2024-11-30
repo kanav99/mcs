@@ -8,7 +8,7 @@ use bincode;
 // use std::time::Instant;
 
 use std::ffi::{c_ulonglong, c_uint};
-const MAX_DIM: usize = 1024;
+const MAX_DIM: usize = 10001;
 
 #[no_mangle]
 extern "C" fn hello_rust() {

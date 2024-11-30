@@ -43,7 +43,7 @@ void print(const T& x)
 template <class T>
 void read_into(int connfd, T& buffer)
 {
-    int start = 0;
+    u64 start = 0;
     while (start < sizeof(buffer))
     {
         int n = read(connfd, (char *)(&buffer) + start, sizeof(buffer) - start);
@@ -59,10 +59,10 @@ void read_into(int connfd, T& buffer)
 template <class T>
 void read_into(int connfd, Mat<T> &buffer)
 {
-    int start = 0;
+    u64 start = 0;
     char *data = (char *)buffer.data();
     auto size = buffer.size() * sizeof(T);
-    while (start < buffer.size())
+    while (start < size)
     {
         int n = read(connfd, data + start, size - start);
         if (n < 0)
@@ -77,7 +77,7 @@ void read_into(int connfd, Mat<T> &buffer)
 template <class T>
 void write_into(int connfd, const T& buffer)
 {
-    int start = 0;
+    u64 start = 0;
     while (start < sizeof(buffer))
     {
         int n = write(connfd, (const char*)(&buffer) + start, sizeof(buffer) - start);
@@ -93,10 +93,10 @@ void write_into(int connfd, const T& buffer)
 template <class T>
 void write_into(int connfd, const Mat<T> &buffer)
 {
-    int start = 0;
+    u64 start = 0;
     char *data = (char *)buffer.data();
     auto size = buffer.size() * sizeof(T);
-    while (start < buffer.size())
+    while (start < size)
     {
         int n = write(connfd, data + start, size - start);
         if (n < 0)
@@ -152,17 +152,20 @@ void loop(const Mat<T> &A, int port = DEFAULT_PORT)
             // if ((childpid = fork()) == 0) 
             { 
                 // close(listenfd); 
-                std::cerr << "[server] Connection from " << inet_ntoa(cliaddr.sin_addr) << std::endl;
                 
                 u64 d0, d1;
                 read_into(connfd, d0);
                 read_into(connfd, d1);
+                // std::cerr << "[server] Connection from " << inet_ntoa(cliaddr.sin_addr) << " with a matrix of dimensions " << d0 << "x" << d1 << std::endl;
                 Mat<T> inp(d0, d1); 
                 // printf("Message From TCP client: "); 
                 read_into(connfd, inp);
+                // std::cerr << inp(0, 0) << " " << inp(d0 - 1, d1 - 1) << std::endl;
                 // print(buffer);
                 // std::cout << buffer << std::endl;
                 Mat<T> res = A * inp;
+                // std::cerr << "[server] Sending back a matrix of dimensions " << res.rows() << "x" << res.cols() << std::endl;
+                // std::cerr << res(0, 0) << " " << res(A.rows() - 1, d1 - 1) << std::endl;
                 write_into(connfd, res);
                 close(connfd); 
                 // exit(0); 
