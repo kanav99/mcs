@@ -53,3 +53,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     add_subdirectory(tests)
   endif()
 endif()
+
+add_executable(server src/server.cpp)
+target_link_libraries(server PRIVATE mcs)
+
+add_executable(client src/client.cpp)
+target_link_libraries(client PRIVATE mcs)
