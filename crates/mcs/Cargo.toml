@@ -1,0 +1,11 @@
+[package]
+name = "mcs" # the name of the package
+version = "0.1.0"    # the current version, obeying semver
+authors = ["Kanav Gupta <kanav0610@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+ark-ff = "0.5.0"
+ark-ec = "0.5.0"
+ark-std = "0.5.0"
+ark-test-curves = { version = "0.5.0", features = ["bls12_381_curve"]}

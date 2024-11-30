@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = ["crates/mcs", "crates/mcs-cpp"]
+
+[workspace.package]
+description = "Matrix Commitment Schemes with C++ interop"
+authors = ["Kanav Gupta <kanav0610@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+readme = "README.md"
+keywords = [""]
+categories = [""]
+repository = "https://github.com/kanav99/mcs"
