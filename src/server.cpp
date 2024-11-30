@@ -10,8 +10,13 @@ using T = unsigned long long;
 
 Mat<T> mat(DIM0, DIM1);
 
-int main()
+int main(int argc, char *argv[])
 {
+    int gen_mcs = 0;
+    if (argc > 1)
+    {
+        gen_mcs = atoi(argv[1]);
+    }
     std::cerr << "[server] Server using " << Eigen::nbThreads() << " threads" << std::endl;
     for (int i = 0; i < DIM0; i++)
     {
@@ -21,11 +26,18 @@ int main()
         }
     }
 
-    mcs_gen_setup();
-    mcs_load_setup();
-    std::cerr << "[server] Generated setup in `setup.bin`" << std::endl;
-    mcs_gen_commit(DIM0, DIM1, mat.data());
-    std::cerr << "[server] Generated Commitment in `commit.bin`" << std::endl;
+    if (gen_mcs != 0)
+    {
+        mcs_gen_setup();
+        mcs_load_setup();
+        std::cerr << "[server] Generated setup in `setup.bin`" << std::endl;
+        mcs_gen_commit(DIM0, DIM1, mat.data());
+        std::cerr << "[server] Generated Commitment in `commit.bin`" << std::endl;
+    }
+    else
+    {
+        std::cerr << "[server] Skipping MCS" << std::endl;
+    }
 
     std::cerr << "[server] Listening for requests..." << std::endl;
     loop<T>(mat, PORT);
