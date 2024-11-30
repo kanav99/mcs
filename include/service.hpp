@@ -79,7 +79,7 @@ void loop(int port = DEFAULT_PORT)
                 int start = 0;
                 while (start < sizeof(buffer))
                 {
-                    int n = read(connfd, (void *)(&buffer) + start, sizeof(buffer) - start);
+                    int n = read(connfd, (char *)(&buffer) + start, sizeof(buffer) - start);
                     if (n < 0)
                     {
                         std::cerr << "[server] Error reading from socket" << std::endl;
@@ -93,7 +93,7 @@ void loop(int port = DEFAULT_PORT)
                 start = 0;
                 while (start < sizeof(res))
                 {
-                    int n = write(connfd, (const void*)(&res) + start, sizeof(res) - start);
+                    int n = write(connfd, (const char*)(&res) + start, sizeof(res) - start);
                     if (n < 0)
                     {
                         std::cerr << "[server] Error writing to socket" << std::endl;
@@ -136,10 +136,30 @@ RetType request(ArgType x, std::string ip = "127.0.0.1", int port = DEFAULT_PORT
 
     // memset(buffer, 0, sizeof(buffer)); 
     // strcpy(buffer, "Hello Server"); 
-    write(sockfd, (const void *)(&x), sizeof(x)); 
+    int start = 0;
+    while (start < sizeof(x))
+    {
+        int n = write(sockfd, (const char*)(&x) + start, sizeof(x) - start);
+        if (n < 0)
+        {
+            std::cerr << "[client] Error writing to socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    }
     // printf("Message from server: "); 
     RetType y;
-    read(sockfd, (void *)(&y), sizeof(y)); 
+    start = 0;
+    while (start < sizeof(y))
+    {
+        int n = read(sockfd, (char*)(&y) + start, sizeof(y) - start);
+        if (n < 0)
+        {
+            std::cerr << "[client] Error reading from socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    }
     // std::cout << y << std::endl;
     close(sockfd); 
     return y;
