@@ -58,13 +58,20 @@ void read_into(int connfd[num_threads], T& buffer)
     }
 }
 
-std::pair<u64, u64> chunk(u64 size, int i)
+template <class T>
+void write_into(int connfd[num_threads], const T& buffer)
 {
-    u64 chunk = size / num_threads;
-    u64 start = i * chunk;
-    u64 end = (i == num_threads - 1) ? size : (i + 1) * chunk;
-    u64 cs = end - start;
-    return {start, cs};
+    u64 start = 0;
+    while (start < sizeof(buffer))
+    {
+        int n = write(connfd[0], (const char*)(&buffer) + start, sizeof(buffer) - start);
+        if (n < 0)
+        {
+            std::cerr << "[server] Error writing to socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    }
 }
 
 void read_into(int connfd, char *data, u64 size)
@@ -97,6 +104,15 @@ void write_into(int connfd, const char *data, u64 size)
     }
 }
 
+std::pair<u64, u64> chunk(u64 size, int i)
+{
+    u64 chunk = size / num_threads;
+    u64 start = i * chunk;
+    u64 end = (i == num_threads - 1) ? size : (i + 1) * chunk;
+    u64 cs = end - start;
+    return {start, cs};
+}
+
 template <class T>
 void read_into(int connfd[num_threads], Mat<T> &buffer)
 {
@@ -104,28 +120,12 @@ void read_into(int connfd[num_threads], Mat<T> &buffer)
     char *data = (char *)buffer.data();
     auto size = buffer.size() * sizeof(T);
 
-    #pragma omp parallel for num_threads(num_threads)
+    // #pragma omp parallel for num_threads(num_threads)
     for (int i = 0; i < num_threads; i++)
     {
         auto [s, cs] = chunk(size, i);
         read_into(connfd[i], data + s, cs);
     } 
-}
-
-template <class T>
-void write_into(int connfd[num_threads], const T& buffer)
-{
-    u64 start = 0;
-    while (start < sizeof(buffer))
-    {
-        int n = write(connfd[0], (const char*)(&buffer) + start, sizeof(buffer) - start);
-        if (n < 0)
-        {
-            std::cerr << "[server] Error writing to socket" << std::endl;
-            exit(1);
-        }
-        start += n;
-    }
 }
 
 template <class T>
@@ -135,7 +135,7 @@ void write_into(int connfd[num_threads], const Mat<T> &buffer)
     char *data = (char *)buffer.data();
     auto size = buffer.size() * sizeof(T);
 
-    #pragma omp parallel for num_threads(num_threads)
+    // #pragma omp parallel for num_threads(num_threads)
     for (int i = 0; i < num_threads; i++)
     {
         auto [s, cs] = chunk(size, i);
