@@ -2,8 +2,8 @@
 #include <mcs.hpp>
 #include <Eigen/Dense>
 
-const uint DIM0 = 2;
-const uint DIM1 = 2;
+const uint DIM0 = 1000;
+const uint DIM1 = 1000;
 const int PORT = 5065;
 
 using T = unsigned long long;

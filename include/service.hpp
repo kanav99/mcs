@@ -58,6 +58,7 @@ void loop(int port = DEFAULT_PORT)
             // if ((childpid = fork()) == 0) 
             { 
                 // close(listenfd); 
+                std::cerr << "[server] Connection from " << inet_ntoa(cliaddr.sin_addr) << std::endl;
                 ArgType buffer;
                 bzero((char *)(&buffer), sizeof(buffer)); 
                 // printf("Message From TCP client: "); 
