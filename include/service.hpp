@@ -76,11 +76,31 @@ void loop(int port = DEFAULT_PORT)
                 ArgType buffer;
                 bzero((char *)(&buffer), sizeof(buffer)); 
                 // printf("Message From TCP client: "); 
-                read(connfd, (void *) (&buffer), sizeof(buffer)); 
-                print(buffer);
+                int start = 0;
+                while (start < sizeof(buffer))
+                {
+                    int n = read(connfd, (void *)(&buffer) + start, sizeof(buffer) - start);
+                    if (n < 0)
+                    {
+                        std::cerr << "[server] Error reading from socket" << std::endl;
+                        exit(1);
+                    }
+                    start += n;
+                }
+                // print(buffer);
                 // std::cout << buffer << std::endl;
                 RetType res = F(buffer);
-                write(connfd, (const void*)(&res), sizeof(res)); 
+                start = 0;
+                while (start < sizeof(res))
+                {
+                    int n = write(connfd, (const void*)(&res) + start, sizeof(res) - start);
+                    if (n < 0)
+                    {
+                        std::cerr << "[server] Error writing to socket" << std::endl;
+                        exit(1);
+                    }
+                    start += n;
+                }
                 close(connfd); 
                 // exit(0); 
             } 
