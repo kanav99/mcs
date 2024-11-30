@@ -3,8 +3,8 @@
 #include <Eigen/Dense>
 #include <chrono>
 
-const uint DIM0 = 1000;
-const uint DIM1 = 1000;
+const uint DIM0 = 10000;
+const uint DIM1 = 10000;
 const uint BATCH_SIZE = 100;
 const int PORT = 5065;
 
