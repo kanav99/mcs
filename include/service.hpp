@@ -176,13 +176,16 @@ void loop(const Mat<T> &A, int port = DEFAULT_PORT)
         read_into(connfd, d1);
         Mat<T> inp(d0, d1); 
         read_into(connfd, inp);
+        auto start = std::chrono::high_resolution_clock::now();
         Mat<T> res = A * inp;
+        auto end = std::chrono::high_resolution_clock::now();
         write_into(connfd, res);
 
         for (int i = 0; i < num_threads; i++)
         {
             close(connfd[i]);
         } 
+        std::cerr << "Time for computation: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
     } 
 }
 
