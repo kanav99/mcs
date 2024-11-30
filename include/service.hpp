@@ -15,9 +15,15 @@
 
 const int DEFAULT_PORT = 5065;
 
-template <class T, int D0, int D1>
-void print(const Eigen::Matrix<T, D0, D1>& mat)
+template <class T>
+using Mat = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+using u64 = unsigned long long;
+
+template <class T>
+void print(const Mat<T>& mat)
 {
+    int D0 = mat.rows();
+    int D1 = mat.cols();
     for (int i = 0; i < D0; i++)
     {
         for (int j = 0; j < D1; j++)
@@ -28,8 +34,82 @@ void print(const Eigen::Matrix<T, D0, D1>& mat)
     }
 }
 
-template <class ArgType, class RetType, RetType (*F)(const ArgType&)>
-void loop(int port = DEFAULT_PORT) 
+template <class T>
+void print(const T& x)
+{
+    std::cout << x << std::endl;
+}
+
+template <class T>
+void read_into(int connfd, T& buffer)
+{
+    int start = 0;
+    while (start < sizeof(buffer))
+    {
+        int n = read(connfd, (char *)(&buffer) + start, sizeof(buffer) - start);
+        if (n < 0)
+        {
+            std::cerr << "[server] Error reading from socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    }
+}
+
+template <class T>
+void read_into(int connfd, Mat<T> &buffer)
+{
+    int start = 0;
+    char *data = (char *)buffer.data();
+    auto size = buffer.size() * sizeof(T);
+    while (start < buffer.size())
+    {
+        int n = read(connfd, data + start, size - start);
+        if (n < 0)
+        {
+            std::cerr << "[server] Error reading from socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    } 
+}
+
+template <class T>
+void write_into(int connfd, const T& buffer)
+{
+    int start = 0;
+    while (start < sizeof(buffer))
+    {
+        int n = write(connfd, (const char*)(&buffer) + start, sizeof(buffer) - start);
+        if (n < 0)
+        {
+            std::cerr << "[server] Error writing to socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    }
+}
+
+template <class T>
+void write_into(int connfd, const Mat<T> &buffer)
+{
+    int start = 0;
+    char *data = (char *)buffer.data();
+    auto size = buffer.size() * sizeof(T);
+    while (start < buffer.size())
+    {
+        int n = write(connfd, data + start, size - start);
+        if (n < 0)
+        {
+            std::cerr << "[server] Error writing to socket" << std::endl;
+            exit(1);
+        }
+        start += n;
+    } 
+}
+
+template <class T>
+void loop(const Mat<T> &A, int port = DEFAULT_PORT) 
 { 
     // pid_t childpid;  
     struct sockaddr_in cliaddr, servaddr; 
@@ -73,34 +153,17 @@ void loop(int port = DEFAULT_PORT)
             { 
                 // close(listenfd); 
                 std::cerr << "[server] Connection from " << inet_ntoa(cliaddr.sin_addr) << std::endl;
-                ArgType buffer;
-                bzero((char *)(&buffer), sizeof(buffer)); 
+                
+                u64 d0, d1;
+                read_into(connfd, d0);
+                read_into(connfd, d1);
+                Mat<T> inp(d0, d1); 
                 // printf("Message From TCP client: "); 
-                int start = 0;
-                while (start < sizeof(buffer))
-                {
-                    int n = read(connfd, (char *)(&buffer) + start, sizeof(buffer) - start);
-                    if (n < 0)
-                    {
-                        std::cerr << "[server] Error reading from socket" << std::endl;
-                        exit(1);
-                    }
-                    start += n;
-                }
+                read_into(connfd, inp);
                 // print(buffer);
                 // std::cout << buffer << std::endl;
-                RetType res = F(buffer);
-                start = 0;
-                while (start < sizeof(res))
-                {
-                    int n = write(connfd, (const char*)(&res) + start, sizeof(res) - start);
-                    if (n < 0)
-                    {
-                        std::cerr << "[server] Error writing to socket" << std::endl;
-                        exit(1);
-                    }
-                    start += n;
-                }
+                Mat<T> res = A * inp;
+                write_into(connfd, res);
                 close(connfd); 
                 // exit(0); 
             } 
@@ -109,8 +172,8 @@ void loop(int port = DEFAULT_PORT)
     } 
 }
 
-template <class ArgType, class RetType>
-RetType request(ArgType x, std::string ip = "127.0.0.1", int port = DEFAULT_PORT) 
+template <class T>
+Mat<T> request(const Mat<T> &x, u64 out_d0, std::string ip = "127.0.0.1", int port = DEFAULT_PORT) 
 { 
     int sockfd; 
     struct sockaddr_in servaddr; 
@@ -136,30 +199,14 @@ RetType request(ArgType x, std::string ip = "127.0.0.1", int port = DEFAULT_PORT
 
     // memset(buffer, 0, sizeof(buffer)); 
     // strcpy(buffer, "Hello Server"); 
-    int start = 0;
-    while (start < sizeof(x))
-    {
-        int n = write(sockfd, (const char*)(&x) + start, sizeof(x) - start);
-        if (n < 0)
-        {
-            std::cerr << "[client] Error writing to socket" << std::endl;
-            exit(1);
-        }
-        start += n;
-    }
+    u64 d0 = x.rows();
+    u64 d1 = x.cols();
+    write_into(sockfd, d0);
+    write_into(sockfd, d1);
+    write_into(sockfd, x);
     // printf("Message from server: "); 
-    RetType y;
-    start = 0;
-    while (start < sizeof(y))
-    {
-        int n = read(sockfd, (char*)(&y) + start, sizeof(y) - start);
-        if (n < 0)
-        {
-            std::cerr << "[client] Error reading from socket" << std::endl;
-            exit(1);
-        }
-        start += n;
-    }
+    Mat<T> y(out_d0, d1);
+    read_into(sockfd, y);
     // std::cout << y << std::endl;
     close(sockfd); 
     return y;

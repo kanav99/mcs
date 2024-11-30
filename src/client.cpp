@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     mcs_load_setup();
     mcs_load_commit();
 
-    Eigen::Matrix<T, DIM1, BATCH_SIZE> x;
+    Mat<T> x(DIM1, BATCH_SIZE);
     Eigen::Matrix<T, BATCH_SIZE, 1> rlc;
     // randomize rlc;
     for (int i = 0; i < BATCH_SIZE; i++)
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     }
 
     auto start = std::chrono::high_resolution_clock::now();
-    Eigen::Matrix<T, DIM0, BATCH_SIZE> y = request<Eigen::Matrix<T, DIM1, BATCH_SIZE>, Eigen::Matrix<T, DIM0, BATCH_SIZE>>(x, ip, PORT);
+    Mat<T> y = request<T>(x, DIM0, ip, PORT);
     Eigen::Matrix<T, DIM0, 1> y_combined = y * rlc;
     Eigen::Matrix<T, DIM1, 1> x_combined = x * rlc;
     auto v = mcs_verify(DIM0, DIM1, x_combined.data(), y_combined.data());
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
-    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> mat(DIM0, DIM1);
+    Mat<T> mat(DIM0, DIM1);
 
     for (int i = 0; i < DIM0; i++)
     {
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     }
 
     start = std::chrono::high_resolution_clock::now();
-    Eigen::Matrix<T, DIM0, BATCH_SIZE> y_actual = mat * x;
+    Mat<T> y_actual = mat * x;
     end = std::chrono::high_resolution_clock::now();
 
     std::cout << "Local Computation Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
