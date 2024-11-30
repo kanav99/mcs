@@ -269,16 +269,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mcs"
-version = "0.1.0"
-dependencies = [
- "ark-ec",
- "ark-ff",
- "ark-std",
- "ark-test-curves",
-]
-
-[[package]]
 name = "mcs-cpp"
 version = "0.1.0"
 dependencies = [
@@ -288,7 +278,6 @@ dependencies = [
  "ark-std",
  "ark-test-curves",
  "bincode",
- "mcs",
 ]
 
 [[package]]

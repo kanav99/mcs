@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/mcs", "crates/mcs-cpp"]
+members = ["crates/mcs-cpp"]
 
 [workspace.package]
 description = "Matrix Commitment Schemes with C++ interop"
